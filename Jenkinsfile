@@ -1,10 +1,11 @@
+
 pipeline {
     agent any
 
     environment {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
-        GIT_CREDENTIALS = 'Git' // Jenkins Git credentials ID
+        GIT_CREDENTIALS = 'GitHub-Credentials' // Jenkins Git credentials ID
     }
 
     triggers {
@@ -23,14 +24,6 @@ pipeline {
         stage('Build Spring Boot App') {
             steps {
                 bat 'mvn clean package -Dmaven.repo.local=.m2/repository'
-
-                // Get the generated JAR file name dynamically
-                bat '''
-                    for /F "delims=" %%F in ('dir /B target\\*.jar') do (
-                        echo "✅ Found JAR: %%F"
-                        echo %%F > jar_filename.txt
-                    )
-                '''
             }
         }
 
@@ -39,8 +32,7 @@ pipeline {
                 bat '''
                     if not exist deploy mkdir deploy
                     del /Q deploy\\*
-                    set /p JAR_FILE=<jar_filename.txt
-                    copy "target\\%JAR_FILE%" "deploy\\%JAR_FILE%"
+                    copy target\\*.jar deploy\\ems-backend-0.0.1-SNAPSHOT.jar
                     tar -cvf deploy.zip deploy\\*
                 '''
             }
@@ -49,14 +41,12 @@ pipeline {
         stage('Deploy to Azure') {
             steps {
                 withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
-                    bat '''
-                        set /p JAR_FILE=<jar_filename.txt
-                        echo "Deploying %JAR_FILE% to Azure"
+                    bat """
                         az webapp deployment source config-zip ^
                         --resource-group ${env.RESOURCE_GROUP} ^
                         --name ${env.APP_NAME} ^
                         --src deploy.zip
-                    '''
+                    """
                 }
             }
         }
