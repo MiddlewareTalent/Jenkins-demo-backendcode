@@ -2,13 +2,9 @@ pipeline {
     agent any
 
     environment {
-        RESOURCE_GROUP = 'Demo_Pract'  //resorce group name
+        RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
-        GIT_CREDENTIALS = 'Git' // Jenkins GitHub Credentials
-    }
-
-    triggers {
-        pollSCM('* * * * *') // Poll every minute (adjust as needed)
+        GIT_CREDENTIALS = 'Git'
     }
 
     stages {
@@ -16,20 +12,14 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
-                    credentialsId: env.GIT_CREDENTIALS
-            }
-        }
-
-        stage('Set Up JDK 17') {
-            steps {
-                bat 'choco install openjdk17'
-                bat 'setx JAVA_HOME "C:\\Program Files\\OpenJDK\\openjdk-17"'
+                    credentialsId: env.GIT_CREDENTIALS,
+                    shallow: true // Fetch only latest commit
             }
         }
 
         stage('Build Spring Boot App') {
             steps {
-                bat 'mvn clean install'
+                bat 'mvn clean install -Dmaven.repo.local=.m2/repository'
             }
         }
 
