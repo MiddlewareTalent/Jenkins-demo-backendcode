@@ -23,6 +23,15 @@ pipeline {
         stage('Build Spring Boot App') {
             steps {
                 bat 'mvn clean package -Dmaven.repo.local=.m2/repository'
+
+                // Print the generated JAR file name
+                bat '''
+                    echo "🔍 Checking for JAR file in target directory..."
+                    for /F "delims=" %%F in ('dir /B target\\*.jar') do (
+                        echo "✅ Found JAR: %%F"
+                        set JAR_FILE=%%F
+                    )
+                '''
             }
         }
 
@@ -31,7 +40,7 @@ pipeline {
                 bat '''
                     if not exist deploy mkdir deploy
                     del /Q deploy\\*
-                    copy target\\*.jar deploy\\app.jar
+                    for /F "delims=" %%F in ('dir /B target\\*.jar') do copy "target\\%%F" "deploy\\app.jar"
                     tar -cvf deploy.zip deploy\\*
                 '''
             }
