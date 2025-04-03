@@ -4,7 +4,7 @@ pipeline {
     environment {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
-        GIT_CREDENTIALS = 'GitHub-Credentials' // Jenkins Git credentials ID
+        GIT_CREDENTIALS = 'Git' // Jenkins Git credentials ID
     }
 
     triggers {
