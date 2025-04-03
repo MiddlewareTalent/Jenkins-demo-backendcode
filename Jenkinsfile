@@ -5,7 +5,6 @@ pipeline {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
         GIT_CREDENTIALS = 'Git' // Jenkins Git credentials ID
-        BRANCH = "${env.GIT_BRANCH ?: 'main'}"
         TRIVY_OUTPUT = 'trivy_report.json'
     }
 
