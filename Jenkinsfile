@@ -24,12 +24,11 @@ pipeline {
             steps {
                 bat 'mvn clean package -Dmaven.repo.local=.m2/repository'
 
-                // Print the generated JAR file name
+                // Get the generated JAR file name dynamically
                 bat '''
-                    echo "🔍 Checking for JAR file in target directory..."
                     for /F "delims=" %%F in ('dir /B target\\*.jar') do (
                         echo "✅ Found JAR: %%F"
-                        set JAR_FILE=%%F
+                        echo %%F > jar_filename.txt
                     )
                 '''
             }
@@ -40,7 +39,8 @@ pipeline {
                 bat '''
                     if not exist deploy mkdir deploy
                     del /Q deploy\\*
-                    for /F "delims=" %%F in ('dir /B target\\*.jar') do copy "target\\%%F" "deploy\\app.jar"
+                    set /p JAR_FILE=<jar_filename.txt
+                    copy "target\\%JAR_FILE%" "deploy\\%JAR_FILE%"
                     tar -cvf deploy.zip deploy\\*
                 '''
             }
@@ -49,12 +49,14 @@ pipeline {
         stage('Deploy to Azure') {
             steps {
                 withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
-                    bat """
+                    bat '''
+                        set /p JAR_FILE=<jar_filename.txt
+                        echo "Deploying %JAR_FILE% to Azure"
                         az webapp deployment source config-zip ^
                         --resource-group ${env.RESOURCE_GROUP} ^
                         --name ${env.APP_NAME} ^
                         --src deploy.zip
-                    """
+                    '''
                 }
             }
         }
