@@ -39,9 +39,9 @@ pipeline {
             steps {
                 bat '''
                     if not exist deploy mkdir deploy
-                    del /Q deploy\*
-                    copy target\*.jar deploy\app.jar
-                    tar -cvf deploy.zip deploy\*
+                    del /Q deploy\\*
+                    copy target\\*.jar deploy\\app.jar
+                    tar -cvf deploy.zip deploy\\*
                 '''
             }
         }
