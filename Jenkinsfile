@@ -4,7 +4,11 @@ pipeline {
     environment {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
-        GIT_CREDENTIALS = 'Git'
+        GIT_CREDENTIALS = 'GitHub-Credentials' // Update your Jenkins Git credentials ID
+    }
+
+    triggers {
+        pollSCM('H/2 * * * *') // Auto-trigger build every 2 minutes if new changes are detected
     }
 
     stages {
@@ -13,7 +17,7 @@ pipeline {
                 git branch: 'main',
                     url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
                     credentialsId: env.GIT_CREDENTIALS,
-                    shallow: true // Fetch only latest commit
+                    depth: 1 // Shallow clone (only latest commit)
             }
         }
 
