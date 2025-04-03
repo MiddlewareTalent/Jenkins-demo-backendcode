@@ -28,8 +28,8 @@ pipeline {
 
         stage('Prepare Deployment Package') {
             steps {
-                bat 'mkdir deploy && copy target/*.jar deploy/app.jar'
-                bat 'tar -cvf deploy.zip deploy/*'
+                bat 'mkdir deploy && copy target\\*.jar deploy\\app.jar'
+                bat 'tar -cvf deploy.zip deploy\\*'
             }
         }
 
@@ -37,9 +37,9 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
                     bat """
-                        az webapp deployment source config-zip \
-                        --resource-group ${env.RESOURCE_GROUP} \
-                        --name ${env.APP_NAME} \
+                        az webapp deployment source config-zip ^
+                        --resource-group ${env.RESOURCE_GROUP} ^
+                        --name ${env.APP_NAME} ^
                         --src deploy.zip
                     """
                 }
