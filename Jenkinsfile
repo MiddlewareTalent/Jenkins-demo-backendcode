@@ -5,28 +5,27 @@ pipeline {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
         GIT_CREDENTIALS = 'Git' // Jenkins Git credentials ID
+        BRANCH = "${env.GIT_BRANCH ?: 'main'}"
+        TRIVY_OUTPUT = 'trivy_report.json'
     }
 
     triggers {
-        pollSCM('H/2 * * * *') // Poll SCM every 2 minutes for changes
+        pollSCM('*/2 * * * *') // Auto-trigger build every 2 minutes if new changes are detected
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                script {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: "*/main"]],
-                        userRemoteConfigs: [[
-                            url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
-                            credentialsId: env.GIT_CREDENTIALS
-                        ]]
-                    ])
-                }
-                script {
-                    bat 'git log -1 --pretty=format:"Latest Commit: %h - %an: %s"'
-                }
+                git branch: BRANCH,
+                    url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
+                    credentialsId: env.GIT_CREDENTIALS
+            }
+        }
+
+        stage('Security Scan with Trivy') {
+            steps {
+                sh 'trivy fs . --format json > ${TRIVY_OUTPUT}'
+                archiveArtifacts artifacts: TRIVY_OUTPUT, fingerprint: true
             }
         }
 
@@ -39,11 +38,10 @@ pipeline {
         stage('Prepare Deployment Package') {
             steps {
                 bat '''
-                    echo Cleaning previous deployment artifacts...
                     if not exist deploy mkdir deploy
-                    del /Q deploy\\*
-                    copy target\\*.jar deploy\\app.jar
-                    tar -cvf deploy.zip deploy
+                    del /Q deploy\*
+                    copy target\*.jar deploy\app.jar
+                    tar -cvf deploy.zip deploy\*
                 '''
             }
         }
@@ -51,13 +49,12 @@ pipeline {
         stage('Deploy to Azure') {
             steps {
                 withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
-                    bat '''
-                        echo Deploying to Azure Web App...
+                    bat """
                         az webapp deployment source config-zip ^
-                        --resource-group "%RESOURCE_GROUP%" ^
-                        --name "%APP_NAME%" ^
+                        --resource-group ${env.RESOURCE_GROUP} ^
+                        --name ${env.APP_NAME} ^
                         --src deploy.zip
-                    '''
+                    """
                 }
             }
         }
@@ -65,10 +62,16 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment to Azure App Service succeeded! 🎉'
+            echo '✅ Deployment to Azure App Service succeeded!'
+            mail to: 'your-email@example.com',
+                 subject: 'Jenkins Build Success',
+                 body: "Build succeeded for branch ${BRANCH}."
         }
         failure {
-            echo '❌ Deployment to Azure App Service failed. Check logs for details.'
+            echo '❌ Deployment to Azure App Service failed!'
+            mail to: 'your-email@example.com',
+                 subject: 'Jenkins Build Failed',
+                 body: "Build failed for branch ${BRANCH}. Check logs for details."
         }
     }
 }
