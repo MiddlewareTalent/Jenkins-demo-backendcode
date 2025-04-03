@@ -4,7 +4,7 @@ pipeline {
     environment {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
-        GIT_CREDENTIALS = 'Git' // Jenkins Git credentials ID
+        GIT_CREDENTIALS = 'GitHub-Credentials' // Jenkins Git credentials ID
     }
 
     triggers {
@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: BRANCH,
+                git branch: 'main',
                     url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
                     credentialsId: env.GIT_CREDENTIALS
             }
@@ -54,15 +54,9 @@ pipeline {
     post {
         success {
             echo '✅ Deployment to Azure App Service succeeded!'
-            mail to: 'your-email@example.com',
-                 subject: 'Jenkins Build Success',
-                 body: "Build succeeded for branch ${BRANCH}."
         }
         failure {
             echo '❌ Deployment to Azure App Service failed!'
-            mail to: 'your-email@example.com',
-                 subject: 'Jenkins Build Failed',
-                 body: "Build failed for branch ${BRANCH}. Check logs for details."
         }
     }
 }
