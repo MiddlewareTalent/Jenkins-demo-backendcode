@@ -30,16 +30,16 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
                     bat """
-                        az webapp deployment source config-zip \
+                        az webapp deploy \
                         --resource-group ${env.RESOURCE_GROUP} \
                         --name ${env.APP_NAME} \
                         --src-path target/*.jar \
+                        --type jar \
                         --publish-profile "${PUBLISH_PROFILE}"
                     """
                 }
             }
         }
-    }
 
     post {
         success {
