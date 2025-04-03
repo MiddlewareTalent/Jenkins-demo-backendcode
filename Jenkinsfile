@@ -5,7 +5,6 @@ pipeline {
         RESOURCE_GROUP = 'Demo_Pract'
         APP_NAME = 'Demo-backendcode'
         GIT_CREDENTIALS = 'Git' // Jenkins Git credentials ID
-        TRIVY_OUTPUT = 'trivy_report.json'
     }
 
     triggers {
@@ -18,13 +17,6 @@ pipeline {
                 git branch: BRANCH,
                     url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
                     credentialsId: env.GIT_CREDENTIALS
-            }
-        }
-
-        stage('Security Scan with Trivy') {
-            steps {
-                sh 'trivy fs . --format json > ${TRIVY_OUTPUT}'
-                archiveArtifacts artifacts: TRIVY_OUTPUT, fingerprint: true
             }
         }
 
