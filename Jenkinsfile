@@ -22,7 +22,14 @@ pipeline {
 
         stage('Build Spring Boot App') {
             steps {
-                bat 'mvn clean install -Dmaven.repo.local=.m2/repository'
+                bat 'mvn clean package -Dmaven.repo.local=.m2/repository'
+            }
+        }
+
+        stage('Prepare Deployment Package') {
+            steps {
+                bat 'mkdir deploy && copy target/*.jar deploy/app.jar'
+                bat 'tar -cvf deploy.zip deploy/*'
             }
         }
 
@@ -30,17 +37,15 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
                     bat """
-                        az webapp deploy \
+                        az webapp deployment source config-zip \
                         --resource-group ${env.RESOURCE_GROUP} \
                         --name ${env.APP_NAME} \
-                        --src-path target/*.jar \
-                        --type jar \
-                        --publish-profile "${PUBLISH_PROFILE}"
+                        --src deploy.zip
                     """
                 }
             }
         }
-    } // 🔹 Properly closed `stages` block here
+    }
 
     post {
         success {
