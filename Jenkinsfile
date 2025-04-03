@@ -28,7 +28,7 @@ pipeline {
 
         stage('Deploy to Azure') {
             steps {
-                withCredentials([string(credentialsId: 'AZURE_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
+                withCredentials([string(credentialsId: 'AZURE_WEBAPP_PUBLISH_PROFILE', variable: 'PUBLISH_PROFILE')]) {
                     bat """
                         az webapp deploy \
                         --resource-group ${env.RESOURCE_GROUP} \
