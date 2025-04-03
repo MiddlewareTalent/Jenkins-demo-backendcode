@@ -40,6 +40,7 @@ pipeline {
                 }
             }
         }
+    } // 🔹 Properly closed `stages` block here
 
     post {
         success {
