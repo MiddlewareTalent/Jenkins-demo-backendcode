@@ -8,7 +8,7 @@ pipeline {
     }
 
     triggers {
-        pollSCM('H/2 * * * *') // Auto-trigger build every 2 minutes if new changes are detected
+        pollSCM('*/2 * * * *') // Auto-trigger build every 2 minutes if new changes are detected
     }
 
     stages {
@@ -16,8 +16,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/MiddlewareTalent/Jenkins-demo-backendcode.git',
-                    credentialsId: env.GIT_CREDENTIALS,
-                    depth: 1 // Shallow clone (only latest commit)
+                    credentialsId: env.GIT_CREDENTIALS
             }
         }
 
