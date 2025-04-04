@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -32,8 +31,8 @@ pipeline {
                 bat '''
                     if not exist deploy mkdir deploy
                     del /Q deploy\\*
-                    copy target\\*.jar deploy\\ems-backend-0.0.1-SNAPSHOT.jar
-                    tar -cvf deploy.zip deploy\\*
+                    for /F "delims=" %%F in ('dir /B target\\*.jar') do copy "target\\%%F" "deploy\\app.jar"
+                    tar -cvf deploy.zip -C deploy app.jar
                 '''
             }
         }
@@ -54,7 +53,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment to Azure App Service succeeded!'
+            echo '✅ Deployment to Azure App Service succeeded!!'
         }
         failure {
             echo '❌ Deployment to Azure App Service failed!'
